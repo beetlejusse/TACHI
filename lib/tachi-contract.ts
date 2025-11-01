@@ -6,6 +6,7 @@ import { ethers, Contract, Signer, providers } from "ethers"
  * Market data structure matching the Solidity Market struct
  */
 export interface MarketData {
+  question: string
   questionHash: string
   closeTime: number
   betAmount: string // BigNumber as string
@@ -45,6 +46,7 @@ export interface UserStats {
  * Market status information
  */
 export interface MarketStatus {
+  question: string
   secondsRemaining: number
   isBettingOpen: boolean
   isBettingClosed: boolean
@@ -203,13 +205,111 @@ export class TachiContract {
       throw new Error("Signer required for placeBet")
     }
 
-    // First get the market to know the bet amount
-    const market = await this.getMarket(marketId)
-    const betAmount = ethers.BigNumber.from(market.betAmount)
+    try {
+      const market = await this.getMarket(marketId)
+      
+      if (market.resolved) {
+        throw new Error("Market is already resolved")
+      }
+      
+      if (market.isClosed) {
+        throw new Error("Betting is closed for this market")
+      }
 
-    const tx = await this.contract.placeBet(marketId, prediction, { value: betAmount })
-    const receipt = await tx.wait()
-    return receipt.transactionHash
+      const currentTime = await this.getCurrentTimestamp()
+      if (currentTime >= market.closeTime) {
+        throw new Error("Betting time has ended for this market")
+      }
+
+      const betAmount = ethers.BigNumber.from(market.betAmount)
+      
+      const signerAddress = await this.signer.getAddress()
+      const existingBet = await this.getUserBet(marketId, signerAddress)
+      if (existingBet.hasBet) {
+        throw new Error("Already bet")
+      }
+
+      console.log("📝 Placing bet:", {
+        marketId,
+        prediction: prediction ? "YES" : "NO",
+        betAmount: betAmount.toString(),
+        betAmountFormatted: ethers.utils.formatEther(betAmount),
+        signer: signerAddress,
+      })
+
+      const tx = await this.contract.placeBet(marketId, prediction, { 
+        value: betAmount,
+        gasLimit: 500000
+      })
+      
+      console.log("⏳ Transaction sent, waiting for confirmation...", tx.hash)
+      const receipt = await tx.wait()
+      
+      console.log("✅ Transaction confirmed:", receipt.transactionHash)
+      return receipt.transactionHash
+    } catch (error: any) {
+      console.error("❌ Error in placeBet:", error)
+      
+      if (error.code === "UNPREDICTABLE_GAS_LIMIT" || error.code === "CALL_EXCEPTION") {
+        if (error.reason) {
+          throw new Error(error.reason)
+        } else if (error.data?.message) {
+          throw new Error(error.data.message)
+        } else {
+          const revertReason = this.extractRevertReason(error)
+          throw new Error(revertReason || "Transaction failed. Please check contract state and try again.")
+        }
+      }
+      
+      if (error.message) {
+        throw error
+      }
+      
+      throw new Error("Failed to place bet. Please try again.")
+    }
+  }
+
+  /**
+   * Extract revert reason from error
+   */
+  private extractRevertReason(error: any): string {
+    if (error.reason) {
+      return error.reason
+    }
+
+    if (error.data) {
+      if (typeof error.data === "string") {
+        if (error.data.startsWith("0x08c379a0")) {
+          try {
+            const reason = ethers.utils.defaultAbiCoder.decode(
+              ["string"],
+              "0x" + error.data.slice(10)
+            )[0]
+            return reason
+          } catch {
+            return "Transaction reverted"
+          }
+        } else if (error.data.length > 2) {
+          try {
+            const decoded = ethers.utils.toUtf8String("0x" + error.data.slice(138))
+            if (decoded) return decoded
+          } catch {
+          }
+        }
+      } else if (error.data.message) {
+        return error.data.message
+      }
+    }
+
+    if (error.error?.data) {
+      return this.extractRevertReason(error.error)
+    }
+
+    if (error.error?.message) {
+      return error.error.message
+    }
+
+    return "Transaction reverted by contract"
   }
 
 
@@ -221,7 +321,8 @@ export class TachiContract {
   async getMarket(marketId: number): Promise<MarketData> {
     const result = await this.contract.getMarket(marketId)
     return {
-      questionHash: result.questionHash,
+      question: result.question || "",
+      questionHash: result.questionHash || "",
       closeTime: result.closeTime.toNumber(),
       betAmount: result.betAmount.toString(),
       yesPool: result.yesPool.toString(),
@@ -286,6 +387,7 @@ export class TachiContract {
   async getMarketStatus(marketId: number): Promise<MarketStatus> {
     const result = await this.contract.getMarketStatus(marketId)
     return {
+      question: result.question || "",
       secondsRemaining: result.secondsRemaining.toNumber(),
       isBettingOpen: result.isBettingOpen,
       isBettingClosed: result.isBettingClosed,

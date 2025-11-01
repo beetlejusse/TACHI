@@ -102,25 +102,8 @@ export default function LiveEventPage() {
         setTimeRemaining("Closed")
       }
 
-      try {
-        const contractInstance = readOnlyContract.getContract()
-        const filter = contractInstance.filters.MarketCreated(targetMarketId)
-        const events = await contractInstance.queryFilter(filter, 0)
-        
-        if (events.length > 0) {
-          const event = events[events.length - 1]
-          const questionText = event.args?.question || event.args?.[2]
-          if (questionText) {
-            setQuestion(questionText)
-          } else {
-            setQuestion(`Market #${targetMarketId}`)
-          }
-        } else {
-          setQuestion(`Market #${targetMarketId}`)
-        }
-      } catch {
-        setQuestion(`Market #${targetMarketId}`)
-      }
+        const questionText = market.question || status.question || `Market #${targetMarketId}`
+      setQuestion(questionText)
 
       if (address) {
         try {
@@ -361,9 +344,10 @@ export default function LiveEventPage() {
 
       setValidatingAmount(false)
 
+      console.log("📡 Calling contract.placeBet...")
       const txHash = await contract.placeBet(marketId, prediction)
       
-      console.log("✅ Transaction sent successfully:", txHash)
+      console.log("✅ Bet placed successfully! Transaction hash:", txHash)
       setBetSuccess(true)
       
       setTimeout(() => {
@@ -417,10 +401,23 @@ export default function LiveEventPage() {
         errorMsg = "Transaction rejected. Please approve the transaction in your wallet."
         isKnownError = true
       } else if (errorString.includes("gas") || errorString.includes("unpredictable_gas_limit")) {
-        if (errorString.includes("betting window still open")) {
-          errorMsg = "Contract error detected: Betting window issue. This may be a contract bug. Please try again in a moment or contact support."
+        const revertReason = err.reason || err.data?.message || err.error?.data?.message
+        if (revertReason) {
+          errorMsg = revertReason
+        } else if (errorString.includes("betting window still open") || errorString.includes("betting time ended")) {
+          errorMsg = "Betting time has ended for this market. Please refresh and try another market."
+        } else if (errorString.includes("betting closed") || errorString.includes("already closed")) {
+          errorMsg = "Betting is closed for this market. Please refresh and try another market."
         } else {
           errorMsg = "Transaction failed. Please ensure you have enough balance for gas fees and the bet amount."
+        }
+        isKnownError = true
+      } else if (errorString.includes("execution reverted")) {
+        const revertReason = err.reason || err.data?.message || err.error?.data?.message || err.error?.message
+        if (revertReason) {
+          errorMsg = revertReason
+        } else {
+          errorMsg = "Transaction was reverted by the contract. Please check the market status and try again."
         }
         isKnownError = true
       } else if (!isKnownError) {
@@ -518,7 +515,7 @@ export default function LiveEventPage() {
                     )}
                   </div>
                   <h1 className="text-4xl font-black uppercase mb-4 mt-4">
-                    {question || `Market #${marketId}`}
+                    {marketData?.question || question || `Market #${marketId}`}
                   </h1>
                   <div className="flex items-center gap-4 text-sm font-bold">
                     <span className="bg-white border-2 border-black px-3 py-1">
