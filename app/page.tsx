@@ -40,7 +40,7 @@ export default function HomePage() {
                     Launch App
                   </Button>
                 </div>
-                {/* <Link href="/work">
+                {/* <Link href="/live-event">
                   <Button
                     variant="outline"
                     className="border-4 border-black bg-white text-black hover:bg-yellow-400 font-black uppercase text-lg px-8 py-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"

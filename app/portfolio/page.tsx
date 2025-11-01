@@ -210,7 +210,7 @@ export default function PortfolioPage() {
         <div className="mx-auto max-w-6xl px-4">
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: TrendingUp, label: "PLACE BET", desc: "ADD TO YOUR PORTFOLIO", href: "/work" },
+              { icon: TrendingUp, label: "PLACE BET", desc: "ADD TO YOUR PORTFOLIO", href: "/live-event" },
               { icon: PieChartIcon, label: "VIEW ANALYTICS", desc: "DEEP DIVE INTO PERFORMANCE", href: "#" },
               { icon: BarChart3, label: "EXPORT DATA", desc: "DOWNLOAD PORTFOLIO REPORT", href: "#" },
             ].map((action, index) => (

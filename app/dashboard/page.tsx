@@ -264,7 +264,7 @@ export default function DashboardPage() {
         <div className="mx-auto max-w-6xl px-4">
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: Send, label: "PLACE BET", href: "/work" },
+              { icon: Send, label: "PLACE BET", href: "/live-event" },
               { icon: TrendingUp, label: "VIEW PORTFOLIO", href: "#" },
               { icon: Wallet, label: "MANAGE NFTs", href: "/nfts" },
             ].map((action, index) => (
