@@ -32,14 +32,10 @@ export function useWalletUser() {
   // Function to fetch balance directly from wallet/AppKit
   const fetchBalanceFromWallet = useCallback(async (walletAddress: string): Promise<string> => {
     try {
-      console.log("💰 Fetching balance directly from wallet for:", walletAddress)
-      
-      // Get provider from window.ethereum (connected wallet)
       if (typeof window !== "undefined" && (window as any).ethereum) {
         const provider = new ethers.providers.Web3Provider((window as any).ethereum)
         const balance = await provider.getBalance(walletAddress)
         const balanceStr = balance.toString()
-        console.log("✅ Balance fetched from wallet:", balanceStr, "wei")
         return balanceStr
       } else {
         throw new Error("No wallet provider available")
@@ -50,7 +46,6 @@ export function useWalletUser() {
     }
   }, [])
 
-  // Function to update balance (fetches from wallet, then saves to DB)
   const updateBalance = useCallback(async (walletAddress: string) => {
     if (!walletAddress) return
     
@@ -102,20 +97,12 @@ export function useWalletUser() {
       setError(null)
 
       try {
-        console.log("🔍 Checking if user exists for address:", address)
-        // Check if user exists
         const checkResponse = await fetch(`/api/users?walletAddress=${address}`)
-        console.log("📡 GET /api/users response status:", checkResponse.status)
         
         if (checkResponse.ok) {
-          // User exists
           const userData = await checkResponse.json()
-          console.log("✅ User found:", userData.username)
           setUser(userData)
-          // Balance will be fetched automatically by the useEffect hook
         } else if (checkResponse.status === 404) {
-          // User doesn't exist, create one
-          console.log("🆕 User not found, creating new user...")
           const createResponse = await fetch("/api/users", {
             method: "POST",
             headers: {
@@ -124,13 +111,10 @@ export function useWalletUser() {
             body: JSON.stringify({ walletAddress: address }),
           })
 
-          console.log("📡 POST /api/users response status:", createResponse.status)
           
           if (createResponse.ok) {
             const newUser = await createResponse.json()
-            console.log("🎉 New user created:", newUser.username, "with wallet:", newUser.walletAddress)
             setUser(newUser)
-            // Balance will be fetched automatically by the useEffect hook
           } else {
             const errorData = await createResponse.json().catch(() => ({ error: "Unknown error" }))
             console.error("❌ Failed to create user:", errorData)
