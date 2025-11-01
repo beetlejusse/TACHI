@@ -37,7 +37,7 @@ jobs:
           TRIGGERING_ACTOR: ${{ github.triggering_actor }}
         with:
           result-encoding: string
-          script: await require('./scripts/release/workflow/state.js')({ github, context, core })
+          script: await require('./scripts/release/live-eventflow/state.js')({ github, context, core })
     outputs:
       # Job Flags
       start: ${{ steps.state.outputs.start }}
@@ -64,13 +64,13 @@ jobs:
       - run: bash scripts/git-user-config.sh
       - id: start
         name: Create branch with release candidate
-        run: bash scripts/release/workflow/start.sh
+        run: bash scripts/release/live-eventflow/start.sh
       - name: Re-run workflow
         uses: actions/github-script@v7
         env:
           REF: ${{ steps.start.outputs.branch }}
         with:
-          script: await require('./scripts/release/workflow/rerun.js')({ github, context })
+          script: await require('./scripts/release/live-eventflow/rerun.js')({ github, context })
 
   promote:
     needs: state
@@ -87,11 +87,11 @@ jobs:
       - run: bash scripts/git-user-config.sh
       - name: Exit prerelease state
         if: needs.state.outputs.is_prerelease == 'true'
-        run: bash scripts/release/workflow/exit-prerelease.sh
+        run: bash scripts/release/live-eventflow/exit-prerelease.sh
       - name: Re-run workflow
         uses: actions/github-script@v7
         with:
-          script: await require('./scripts/release/workflow/rerun.js')({ github, context })
+          script: await require('./scripts/release/live-eventflow/rerun.js')({ github, context })
 
   changesets:
     needs: state
@@ -111,7 +111,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           result-encoding: string
-          script: await require('./scripts/release/workflow/set-changesets-pr-title.js')({ core })
+          script: await require('./scripts/release/live-eventflow/set-changesets-pr-title.js')({ core })
       - name: Create PR
         uses: changesets/action@v1
         env:
@@ -139,7 +139,7 @@ jobs:
         uses: ./.github/actions/setup
       - id: pack
         name: Pack
-        run: bash scripts/release/workflow/pack.sh
+        run: bash scripts/release/live-eventflow/pack.sh
         env:
           PRERELEASE: ${{ needs.state.outputs.is_prerelease }}
       - name: Upload tarball artifact
@@ -148,7 +148,7 @@ jobs:
           name: ${{ github.ref_name }}
           path: ${{ steps.pack.outputs.tarball }}
       - name: Publish
-        run: bash scripts/release/workflow/publish.sh
+        run: bash scripts/release/live-eventflow/publish.sh
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           TARBALL: ${{ steps.pack.outputs.tarball }}
@@ -158,7 +158,7 @@ jobs:
         env:
           PRERELEASE: ${{ needs.state.outputs.is_prerelease }}
         with:
-          script: await require('./scripts/release/workflow/github-release.js')({ github, context })
+          script: await require('./scripts/release/live-eventflow/github-release.js')({ github, context })
     outputs:
       tarball_name: ${{ steps.pack.outputs.tarball_name }}
 
@@ -174,7 +174,7 @@ jobs:
         with:
           name: ${{ github.ref_name }}
       - name: Check integrity
-        run: bash scripts/release/workflow/integrity-check.sh
+        run: bash scripts/release/live-eventflow/integrity-check.sh
         env:
           TARBALL: ${{ steps.artifact.outputs.download-path }}/${{ needs.publish.outputs.tarball_name }}
 
