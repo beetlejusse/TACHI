@@ -2,7 +2,6 @@
 
 import AppLayout from "@/components/Applayout"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Trophy, Crown } from "lucide-react"
 import { useEffect, useState } from "react"
 import {
@@ -114,28 +113,6 @@ export default function LeaderboardPage() {
           <p className="text-xl font-bold max-w-3xl mx-auto">
             TOP PREDICTORS ON MONAD. COMPETE. WIN $MON. MINT NFTs. DOMINATE.
           </p>
-        </div>
-      </section>
-
-      {/* Global Stats */}
-      <section className="bg-cyan-400 py-12">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: "TOTAL PREDICTORS", value: "10,847" },
-              { label: "$MON DISTRIBUTED", value: "$50.2M" },
-              { label: "NFTS MINTED", value: "847,234" },
-              { label: "AVG GAS SAVED", value: "99.4%" },
-            ].map((stat, index) => (
-              <Card
-                key={index}
-                className="border-3 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white p-4 text-center"
-              >
-                <div className="text-2xl font-black mb-1">{stat.value}</div>
-                <div className="text-xs font-bold uppercase">{stat.label}</div>
-              </Card>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -327,20 +304,6 @@ export default function LeaderboardPage() {
               <div className="text-sm font-bold">PREDICTION WINS IMMORTALIZED</div>
             </Card>
           </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="bg-pink-500 py-20">
-        <div className="mx-auto max-w-4xl px-4 text-center">
-          <h2 className="text-5xl font-black uppercase mb-8 text-white">
-            READY TO
-            <br />
-            <span className="text-black">CLIMB THE MONAD RANKS?</span>
-          </h2>
-          <Button className="bg-black text-white border-4 border-black hover:bg-white hover:text-black font-black uppercase text-xl px-12 py-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            START BETTING NOW
-          </Button>
         </div>
       </section>
     </AppLayout>

@@ -9,7 +9,7 @@ import { useState } from "react"
 import { useWalletUser } from "@/hooks/use-wallet-user"
 import { useAppKitAccount, useDisconnect } from "@reown/appkit/react"
 
-const portfolioData = [ 
+const portfolioData = [
   { date: "MON", balance: 1200 },
   { date: "TUE", balance: 1450 },
   { date: "WED", balance: 1320 },
@@ -102,7 +102,7 @@ export default function DashboardPage() {
                   {user?.username ? `USERNAME: ${user.username}` : "CONNECTED WALLET"}
                 </h2>
                 <div className="bg-white border-4 border-black p-4 rounded-none font-mono text-sm font-black mb-4 flex items-center justify-between">
-                  <span>{formatAddress(address)}</span>
+                  <span>{address}</span>
                   {address && (
                     <button
                       onClick={copyAddress}
@@ -115,7 +115,7 @@ export default function DashboardPage() {
                 </div>
                 {copied && <p className="text-sm font-bold text-green-700">COPIED!</p>}
                 {isConnected && (
-                  <Button 
+                  <Button
                     onClick={handleDisconnect}
                     className="bg-black text-white border-4 border-black hover:bg-white hover:text-black font-black uppercase w-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                   >
@@ -124,9 +124,9 @@ export default function DashboardPage() {
                   </Button>
                 )}
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <Card className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
-                  <div className="text-sm font-bold uppercase mb-2">WALLET BALANCE</div>
+                  <div className="text-sm font-bold uppercase mb-2">$MON BALANCE</div>
                   <div className="text-3xl font-black">
                     {balanceLoading || !isConnected ? "..." : (
                       <span>
@@ -136,16 +136,7 @@ export default function DashboardPage() {
                       </span>
                     )}
                   </div>
-                  <div className="text-xs font-bold mt-2 text-gray-600">
-                    {isConnected ? "Live from wallet" : "Not connected"}
-                  </div>
-                </Card>
-                <Card className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
-                  <div className="text-sm font-bold uppercase mb-2">$MON BALANCE</div>
-                  <div className="text-3xl font-black">
-                    {userLoading ? "..." : user ? Number(user.monWon).toLocaleString() : "0"}
-                  </div>
-                  <div className="text-xs font-bold mt-2">≈ ${user ? (Number(user.monWon) * 8).toLocaleString() : "0"}</div>
+                  {/* <div className="text-xs font-bold mt-2">≈ ${user ? (Number(user.monWon) * 8).toLocaleString() : "0"}</div> */}
                 </Card>
                 <Card className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
                   <div className="text-sm font-bold uppercase mb-2">WIN RATE</div>
@@ -243,9 +234,8 @@ export default function DashboardPage() {
                       <div className="text-right">
                         <div className="text-lg font-black mb-1">{bet.amount}</div>
                         <span
-                          className={`border-2 border-black px-2 py-1 font-black text-xs ${
-                            bet.status === "WON" ? "bg-green-300" : "bg-red-300"
-                          }`}
+                          className={`border-2 border-black px-2 py-1 font-black text-xs ${bet.status === "WON" ? "bg-green-300" : "bg-red-300"
+                            }`}
                         >
                           {bet.status}
                         </span>

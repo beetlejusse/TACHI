@@ -4,11 +4,11 @@ import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { AppKit } from '@/context/Appkit'
+import { TachiContractProvider } from '@/context/TachiContractProvider'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: 'Tachi - MicroBets Prediction Market',
+  description: 'Tachi is a microbets prediction market platform built on the Monad blockchain.',
 }
 
 export default function RootLayout({
@@ -28,8 +28,10 @@ html {
         `}</style>
       </head>
       <body>
+        <TachiContractProvider contractAddress={process.env.NEXT_PUBLIC_TACHI_CONTRACT_ADDRESS || ''} readOnlyRpcUrl={process.env.NEXT_PUBLIC_RPC_URL}>
         <AppKit>{children}</AppKit>
         <Analytics />
+        </TachiContractProvider>
       </body>
     </html>
   )
