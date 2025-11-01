@@ -1,8 +1,3 @@
-/**
- * Creative username generator for bettors
- * Generates random, creative usernames combining various prefixes and suffixes
- */
-
 const prefixes = [
   "ALPHA", "BETA", "GAMMA", "OMEGA", "SIGMA", "DELTA", "ZETA", "THETA",
   "PREDICTION", "ORACLE", "PROPHET", "SEER", "VISION", "INSIGHT",
@@ -63,7 +58,7 @@ export function generateUniqueUsername(
       
       attempts++
     }
-    
+  
     // Fallback: append random number
     const baseUsername = generateUsername()
     const fallbackUsername = `${baseUsername}_${Math.floor(Math.random() * 10000)}`
@@ -72,7 +67,6 @@ export function generateUniqueUsername(
     if (!exists) {
       resolve(fallbackUsername)
     } else {
-      // Last resort: use timestamp
       resolve(`${baseUsername}_${Date.now()}`)
     }
   })
