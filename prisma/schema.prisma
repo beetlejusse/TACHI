@@ -17,7 +17,9 @@ model User {
   monWon    String   @default("0")
   nfts      Int      @default(0)
   streak    Int      @default(0)
-  streakType String  @default("NONE") 
+  streakType String  @default("NONE")
+  balance   String   @default("0") // Wallet balance in wei (stored as string for large numbers)
+  balanceUpdatedAt DateTime? // Last time balance was updated
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -9,7 +9,7 @@ import { useState } from "react"
 import { useWalletUser } from "@/hooks/use-wallet-user"
 import { useAppKitAccount, useDisconnect } from "@reown/appkit/react"
 
-const portfolioData = [
+const portfolioData = [ 
   { date: "MON", balance: 1200 },
   { date: "TUE", balance: 1450 },
   { date: "WED", balance: 1320 },
@@ -52,7 +52,7 @@ const activePositions = [
 
 export default function DashboardPage() {
   const [copied, setCopied] = useState(false)
-  const { user, loading: userLoading, address } = useWalletUser()
+  const { user, loading: userLoading, address, balance: walletBalance, balanceLoading } = useWalletUser()
   const { isConnected } = useAppKitAccount()
   const { disconnect } = useDisconnect()
 
@@ -73,7 +73,6 @@ export default function DashboardPage() {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`
   }
 
-  const fullAddress = address || ""
 
   return (
     <AppLayout>
@@ -89,7 +88,6 @@ export default function DashboardPage() {
                 {isConnected ? "CONNECTED. BETTING. WINNING." : "CONNECT YOUR WALLET"}
               </p>
             </div>
-            <Wallet className="h-20 w-20 text-cyan-400" />
           </div>
         </div>
       </section>
@@ -126,17 +124,32 @@ export default function DashboardPage() {
                   </Button>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
+                <Card className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
+                  <div className="text-sm font-bold uppercase mb-2">WALLET BALANCE</div>
+                  <div className="text-3xl font-black">
+                    {balanceLoading || !isConnected ? "..." : (
+                      <span>
+                        {walletBalance && parseFloat(walletBalance) > 0
+                          ? (parseFloat(walletBalance) / 1e18).toFixed(4)
+                          : "0.0000"}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs font-bold mt-2 text-gray-600">
+                    {isConnected ? "Live from wallet" : "Not connected"}
+                  </div>
+                </Card>
                 <Card className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
                   <div className="text-sm font-bold uppercase mb-2">$MON BALANCE</div>
-                  <div className="text-4xl font-black">
+                  <div className="text-3xl font-black">
                     {userLoading ? "..." : user ? Number(user.monWon).toLocaleString() : "0"}
                   </div>
                   <div className="text-xs font-bold mt-2">≈ ${user ? (Number(user.monWon) * 8).toLocaleString() : "0"}</div>
                 </Card>
                 <Card className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
                   <div className="text-sm font-bold uppercase mb-2">WIN RATE</div>
-                  <div className="text-4xl font-black text-green-600">
+                  <div className="text-3xl font-black text-green-600">
                     {userLoading ? "..." : user ? `${user.winRate.toFixed(0)}%` : "0%"}
                   </div>
                   <div className="text-xs font-bold mt-2">{user ? `${user.wins} WINS` : "NO WINS YET"}</div>

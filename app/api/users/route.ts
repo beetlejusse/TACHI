@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { generateUniqueUsername } from "@/lib/username-generator"
 
-/**
- * GET /api/users?walletAddress=0x...
- * Get user by wallet address
- */
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -30,30 +26,28 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/**
- * POST /api/users
- * Create a new user when wallet connects
- * Body: { walletAddress: string }
- */
 export async function POST(request: NextRequest) {
+  let walletAddress: string | undefined
+
   try {
     const body = await request.json()
-    const { walletAddress } = body
+    walletAddress = body.walletAddress
+
 
     if (!walletAddress) {
       return NextResponse.json({ error: "Wallet address is required" }, { status: 400 })
     }
 
-    // Check if user already exists
+    const normalizedAddress = walletAddress.toLowerCase()
+
     const existingUser = await prisma.user.findUnique({
-      where: { walletAddress: walletAddress.toLowerCase() },
+      where: { walletAddress: normalizedAddress },
     })
 
     if (existingUser) {
       return NextResponse.json(existingUser)
     }
 
-    // Generate unique username
     const checkUsernameExists = async (username: string) => {
       const user = await prisma.user.findUnique({
         where: { username },
@@ -63,38 +57,48 @@ export async function POST(request: NextRequest) {
 
     const username = await generateUniqueUsername(checkUsernameExists)
 
-    // Create new user
     const newUser = await prisma.user.create({
       data: {
-        walletAddress: walletAddress.toLowerCase(),
+        walletAddress: normalizedAddress,
         username,
       },
     })
 
     return NextResponse.json(newUser, { status: 201 })
   } catch (error: any) {
-    console.error("Error creating user:", error)
-    
-    // Handle unique constraint violations
-    if (error.code === "P2002") {
-      // If somehow the wallet address already exists, fetch it instead
-      const user = await prisma.user.findUnique({
-        where: { walletAddress: walletAddress.toLowerCase() },
-      })
-      if (user) {
-        return NextResponse.json(user)
+    console.error("❌ Error creating user:", error)
+    console.error("Error details:", {
+      message: error.message,
+      code: error.code,
+      meta: error.meta,
+    })
+
+    if (error.code === "P2002" && walletAddress) {
+      console.log("⚠️ Unique constraint violation, fetching existing user...")
+      try {
+        const user = await prisma.user.findUnique({
+          where: { walletAddress: walletAddress.toLowerCase() },
+        })
+        if (user) {
+          console.log("✅ Found existing user:", user.username)
+          return NextResponse.json(user)
+        }
+      } catch (fetchError) {
+        console.error("❌ Error fetching existing user:", fetchError)
       }
     }
 
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: "Internal server error",
+        message: error.message,
+      },
+      { status: 500 }
+    )
   }
 }
 
-/**
- * PATCH /api/users
- * Update user data
- * Body: { walletAddress: string, ...fields to update }
- */
+
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json()
@@ -104,7 +108,6 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Wallet address is required" }, { status: 400 })
     }
 
-    // Calculate winRate if wins or losses are being updated
     if (updateData.wins !== undefined || updateData.losses !== undefined) {
       const currentUser = await prisma.user.findUnique({
         where: { walletAddress: walletAddress.toLowerCase() },
