@@ -28,7 +28,7 @@ html {
         `}</style>
       </head>
       <body>
-        <TachiContractProvider contractAddress={process.env.NEXT_PUBLIC_TACHI_CONTRACT_ADDRESS || ''} readOnlyRpcUrl={process.env.NEXT_PUBLIC_RPC_URL}>
+        <TachiContractProvider contractAddress={process.env.NEXT_PUBLIC_TACHI_CONTRACT_ADDRESS || ''} readOnlyRpcUrl={process.env.NEXT_PUBLIC_MONAD_RPC_URL}>
         <AppKit>{children}</AppKit>
         <Analytics />
         </TachiContractProvider>

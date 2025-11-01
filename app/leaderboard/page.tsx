@@ -26,13 +26,7 @@ import {
 } from "recharts"
 
 // Fallback data if API fails
-const fallbackLeaderboardData = [
-  { rank: 1, name: "ALPHA_BETTOR", wins: 347, winRate: "87%", $monWon: "12,543", nfts: "47", streak: "12W" },
-  { rank: 2, name: "ODDS_ORACLE", wins: 312, winRate: "84%", $monWon: "9,875", nfts: "34", streak: "8W" },
-  { rank: 3, name: "PREDICTION_PRO", wins: 298, winRate: "81%", $monWon: "8,732", nfts: "28", streak: "6W" },
-  { rank: 4, name: "MARKET_MAKER", wins: 276, winRate: "79%", $monWon: "7,689", nfts: "22", streak: "5W" },
-  { rank: 5, name: "FORTUNE_TELLER", wins: 245, winRate: "76%", $monWon: "6,542", nfts: "18", streak: "4W" },
-]
+
 
 const performanceData = [
   { month: "JAN", wins: 45, losses: 15, draws: 5 },
@@ -69,35 +63,59 @@ const radarData = [
 
 interface LeaderboardEntry {
   rank: number
+  address?: string
   name: string
   wins: number
   winRate: string
   $monWon: string
-  nfts: string
-  streak: string
+  totalBets?: number
+  nfts?: string
+  streak?: string
 }
 
 export default function LeaderboardPage() {
-  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>(fallbackLeaderboardData)
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchLeaderboard = async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      console.log("📊 Fetching leaderboard data...")
+      const response = await fetch("/api/users/leaderboard")
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch leaderboard: ${response.statusText}`)
+      }
+      
+      const data = await response.json()
+      
+      if (Array.isArray(data) && data.length > 0) {
+        console.log(`✅ Loaded ${data.length} leaderboard entries`)
+        setLeaderboardData(data)
+      } else {
+        console.log("⚠️ No leaderboard data available, using fallback")
+        // setLeaderboardData(fallbackLeaderboardData)
+      }
+    } catch (error: any) {
+      console.error("❌ Error fetching leaderboard:", error)
+      setError(error.message || "Failed to load leaderboard")
+      // setLeaderboardData(fallbackLeaderboardData)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        const response = await fetch("/api/users/leaderboard")
-        if (response.ok) {
-          const data = await response.json()
-          setLeaderboardData(data.length > 0 ? data : fallbackLeaderboardData)
-        }
-      } catch (error) {
-        console.error("Error fetching leaderboard:", error)
-        // Keep fallback data
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchLeaderboard()
+    
+    const interval = setInterval(() => {
+      fetchLeaderboard()
+    }, 30000)
+    
+    return () => clearInterval(interval)
   }, [])
 
   return (
@@ -122,7 +140,23 @@ export default function LeaderboardPage() {
           <h2 className="text-4xl font-black uppercase mb-12">TOP PREDICTORS</h2>
           <Card className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
             {loading ? (
-              <div className="p-8 text-center font-black">LOADING LEADERBOARD...</div>
+              <div className="p-8 text-center font-black">
+                <div className="flex items-center justify-center gap-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-4 border-black border-t-transparent"></div>
+                  <span>LOADING LEADERBOARD...</span>
+                </div>
+              </div>
+            ) : error ? (
+              <div className="p-8 text-center">
+                <div className="font-black uppercase mb-2 text-red-600">ERROR LOADING LEADERBOARD</div>
+                <div className="font-bold text-sm mb-4">{error}</div>
+                <button
+                  onClick={fetchLeaderboard}
+                  className="bg-black text-white border-4 border-black px-4 py-2 font-black uppercase hover:bg-white hover:text-black transition-colors"
+                >
+                  RETRY
+                </button>
+              </div>
             ) : leaderboardData.length === 0 ? (
               <div className="p-8 text-center font-black">NO PREDICTORS YET. BE THE FIRST!</div>
             ) : (
@@ -135,13 +169,15 @@ export default function LeaderboardPage() {
                       <th className="px-4 py-4 text-left font-black uppercase text-sm">WINS</th>
                       <th className="px-4 py-4 text-left font-black uppercase text-sm">WIN RATE</th>
                       <th className="px-4 py-4 text-left font-black uppercase text-sm">$MON EARNED</th>
-                      <th className="px-4 py-4 text-left font-black uppercase text-sm">NFTs</th>
-                      <th className="px-4 py-4 text-left font-black uppercase text-sm">STREAK</th>
+                      <th className="px-4 py-4 text-left font-black uppercase text-sm">TOTAL BETS</th>
                     </tr>
                   </thead>
                   <tbody>
                     {leaderboardData.map((bettor, index) => (
-                      <tr key={index} className="border-b-2 border-black hover:bg-yellow-50 transition-colors">
+                      <tr 
+                        key={bettor.address || index} 
+                        className="border-b-2 border-black hover:bg-yellow-50 transition-colors"
+                      >
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-2">
                             {bettor.rank === 1 && <Crown className="h-5 w-5 text-yellow-500" />}
@@ -154,12 +190,7 @@ export default function LeaderboardPage() {
                         <td className="px-4 py-4 font-black">{bettor.wins}</td>
                         <td className="px-4 py-4 font-bold">{bettor.winRate}</td>
                         <td className="px-4 py-4 font-black text-green-600">${bettor.$monWon}</td>
-                        <td className="px-4 py-4 font-bold">{bettor.nfts}</td>
-                        <td className="px-4 py-4">
-                          <span className="bg-green-200 border-2 border-black px-2 py-1 font-black text-xs">
-                            {bettor.streak}
-                          </span>
-                        </td>
+                        <td className="px-4 py-4 font-bold">{bettor.totalBets || bettor.wins}</td>
                       </tr>
                     ))}
                   </tbody>

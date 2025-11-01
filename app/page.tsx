@@ -70,7 +70,7 @@ export default function HomePage() {
       <section className="bg-black text-white py-20">
         <div className="mx-auto max-w-6xl px-4">
           <h2 className="text-5xl font-black uppercase text-center mb-16">
-            WHY <span className="text-yellow-400">BETTORS?</span>
+            WHY <span className="text-yellow-400">TACHI?</span>
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[

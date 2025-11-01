@@ -16,13 +16,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Wallet address is required" }, { status: 400 })
     }
 
-    console.log("💰 Fetching balance for wallet:", walletAddress)
 
     // Fetch balance from blockchain
     let balance: string
     try {
       balance = await getWalletBalance(walletAddress)
-      console.log("✅ Balance fetched:", balance, "wei")
     } catch (error: any) {
       console.error("❌ Error fetching balance from blockchain:", error)
       // Return error but don't fail completely
@@ -39,12 +37,6 @@ export async function POST(request: NextRequest) {
         balance,
         balanceUpdatedAt: new Date(),
       },
-    })
-
-    console.log("✅ Balance updated in database:", {
-      walletAddress: updatedUser.walletAddress,
-      balance: updatedUser.balance,
-      balanceUpdatedAt: updatedUser.balanceUpdatedAt,
     })
 
     return NextResponse.json({

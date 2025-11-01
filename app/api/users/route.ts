@@ -74,13 +74,11 @@ export async function POST(request: NextRequest) {
     })
 
     if (error.code === "P2002" && walletAddress) {
-      console.log("⚠️ Unique constraint violation, fetching existing user...")
       try {
         const user = await prisma.user.findUnique({
           where: { walletAddress: walletAddress.toLowerCase() },
         })
         if (user) {
-          console.log("✅ Found existing user:", user.username)
           return NextResponse.json(user)
         }
       } catch (fetchError) {
