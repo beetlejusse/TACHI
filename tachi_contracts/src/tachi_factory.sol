@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 contract TACHI_FACTORY {
     
     struct Market {
+        string question;            
         bytes32 questionHash;
         uint256 closeTime;
         uint256 betAmount;
@@ -43,7 +44,6 @@ contract TACHI_FACTORY {
     
     event MarketCreated(
         uint256 indexed marketId,
-        bytes32 questionHash,
         string question,
         uint256 closeTime,
         uint256 durationSeconds,
@@ -89,29 +89,22 @@ contract TACHI_FACTORY {
         require(durationSeconds <= 3600, "Duration too long (max 1 hour)");
         require(betAmount >= MIN_BET_AMOUNT, "Bet amount too low");
         require(betAmount <= MAX_BET_AMOUNT, "Bet amount too high");
+        require(bytes(question).length > 0, "Question cannot be empty");
         
         uint256 marketId = markets.length;
         bytes32 qHash = keccak256(abi.encodePacked(question));
         uint256 closeTime = block.timestamp + durationSeconds;
         
         Market storage newMarket = markets.push();
+        newMarket.question = question;         
         newMarket.questionHash = qHash;
         newMarket.closeTime = closeTime;
         newMarket.betAmount = betAmount;
         newMarket.isClosed = false;
         newMarket.resolved = false;
         
-        emit MarketCreated(marketId, qHash, question, closeTime, durationSeconds, betAmount);
+        emit MarketCreated(marketId, question, closeTime, durationSeconds, betAmount);
         return marketId;
-    }
-    
-    function closeBetting(uint256 marketId) external onlyOrganizer {
-        Market storage market = markets[marketId];
-        require(!market.isClosed, "Already closed");
-        require(!market.resolved, "Already resolved");
-        
-        market.isClosed = true;
-        emit BettingClosed(marketId);
     }
     
     function resolveMarket(uint256 marketId, bool outcome) external onlyOrganizer {
@@ -141,11 +134,8 @@ contract TACHI_FACTORY {
     function placeBet(uint256 marketId, bool prediction) external payable {
         Market storage market = markets[marketId];
         require(marketId < markets.length, "Market does not exist");
-        
-        _closeBettingIfTimeExpired(marketId);
-        
-        require(!market.isClosed, "Betting closed");
         require(block.timestamp < market.closeTime, "Betting time ended");
+        require(!market.isClosed, "Betting closed");
         require(msg.value == market.betAmount, "Incorrect bet amount");
         require(marketBets[marketId][msg.sender].amount == 0, "Already bet");
         
@@ -176,12 +166,9 @@ contract TACHI_FACTORY {
         emit BetPlaced(marketId, msg.sender, prediction, msg.value);
     }
 
-    //INTERNAL FUNCTIONS
-    
     function _closeBettingIfTimeExpired(uint256 marketId) internal {
         Market storage market = markets[marketId];
-        require(block.timestamp >= market.closeTime, "Betting window still open");
-        if (!market.isClosed) {
+        if (block.timestamp >= market.closeTime && !market.isClosed) {
             market.isClosed = true;
             emit BettingClosed(marketId);
         }
@@ -249,8 +236,6 @@ contract TACHI_FACTORY {
             }
         }
     }
-    
-    //GETTER FUNCTIONS
 
     function getUserStats(address user) external view returns (
         uint256 totalBets,
@@ -282,7 +267,7 @@ contract TACHI_FACTORY {
     }
     
     function getMarket(uint256 marketId) external view returns (
-        bytes32 questionHash,
+        string memory question,     
         uint256 closeTime,
         uint256 betAmount,
         uint256 yesPool,
@@ -295,7 +280,7 @@ contract TACHI_FACTORY {
         require(marketId < markets.length, "Market does not exist");
         Market memory market = markets[marketId];
         return (
-            market.questionHash,
+            market.question,      
             market.closeTime,
             market.betAmount,
             market.yesPool,
@@ -329,6 +314,7 @@ contract TACHI_FACTORY {
     }
     
     function getMarketStatus(uint256 marketId) external view returns (
+        string memory question,     
         uint256 secondsRemaining,
         bool isBettingOpen,
         bool isBettingClosed,
@@ -348,6 +334,7 @@ contract TACHI_FACTORY {
         }
         
         return (
+            market.question,       
             remaining,
             bettingOpen,
             market.isClosed,
