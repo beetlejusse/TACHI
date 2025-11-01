@@ -12,6 +12,7 @@ export default function ConnectButton() {
     const { address, isConnected } = useAppKitAccount();
     const { balance: walletBalance } = useWalletUser();
     const [copied, setCopied] = useState(false);
+    const {user} = useWalletUser();
 
     // Format address to show: 0x1234...5678
     const formatAddress = (addr: string | undefined) => {
@@ -60,25 +61,9 @@ export default function ConnectButton() {
         <div className="flex items-center gap-3">
             <Card className="border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-3 bg-white">
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                        <Wallet className="h-4 w-4 text-black" />
-                        <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                                <span className="font-mono text-sm font-black">{formatAddress(address)}</span>
-                                <button
-                                    onClick={handleCopy}
-                                    className="hover:bg-yellow-400 p-1 transition-colors rounded"
-                                    title="Copy full address"
-                                >
-                                    {copied ? (
-                                        <Check className="h-3 w-3 text-green-600" />
-                                    ) : (
-                                        <Copy className="h-3 w-3" />
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <h1 className="font-bold">
+                    {user?.username ? `@${user.username}` : formatAddress(address)}
+                    </h1>
                 </div>
             </Card>
             <Button 

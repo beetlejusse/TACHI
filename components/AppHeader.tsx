@@ -12,7 +12,7 @@ export default function AppHeader() {
                     className="text-2xl font-black uppercase tracking-tight hover:underline decoration-4 flex items-center gap-2"
                 >
                     <div className="text-3xl"></div>
-                    <span>BETTORS</span>
+                    <span>TACHI</span>
                 </Link>
                 <nav className="hidden md:flex items-center gap-8">
                     <Link href="/live-event" className="font-bold uppercase text-sm hover:underline decoration-4">

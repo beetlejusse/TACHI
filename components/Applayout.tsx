@@ -18,7 +18,7 @@ export default function AppLayout({ children, isLanding }: LayoutProps) {
     <WalletUserProvider>
       <TachiContractProvider
         contractAddress={CONTRACT_ADDRESS}
-        readOnlyRpcUrl={process.env.NEXT_PUBLIC_RPC_URL}
+        readOnlyRpcUrl={process.env.NEXT_PUBLIC_MONAD_RPC_URL}
       >
         <div className="min-h-screen bg-white">
           {isLanding ? <LandingHeader /> : <AppHeader />}
@@ -26,7 +26,7 @@ export default function AppLayout({ children, isLanding }: LayoutProps) {
           <footer className="bg-black text-white border-t-4 border-white py-12">
             <div className="mx-auto max-w-6xl px-4">
               <div className="border-t-4 border-white mt-6 pt-2 text-center font-bold uppercase">
-                © 2025 BETTORS - PREDICT. EARN. WIN. POWERED BY MONAD BLOCKCHAIN
+                © 2025 TACHI - PREDICT. EARN. WIN. POWERED BY MONAD BLOCKCHAIN
               </div>
             </div>
           </footer>
