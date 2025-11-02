@@ -9,6 +9,32 @@ import { TachiContractProvider } from '@/context/TachiContractProvider'
 export const metadata: Metadata = {
   title: 'Tachi - MicroBets Prediction Market',
   description: 'Tachi is a microbets prediction market platform built on the Monad blockchain.',
+  icons: {
+    icon: [`/monad.png`],
+    shortcut: [`/monad.png`],
+    apple: [`/monad.png`]
+  },
+  openGraph: {
+    title: "Tachi - MicroBets Prediction Market",
+    description: "Tachi is a microbets prediction market platform built on the Monad blockchain.",
+    url: "https://tachi13.vercel.app", 
+    siteName: "Tachi - MicroBets Prediction Market",
+    locale: "en_US",
+    type: "website",
+    images: ["/tachi.png"]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tachi - MicroBets Prediction Market",
+    description: "Tachi is a microbets prediction market platform built on the Monad blockchain.",
+    images: ["/tachi.png"], 
+    site: "https://tachi13.vercel.app", 
+  },
+  appleWebApp: {
+    title: "Tachi - MicroBets Prediction Market",
+    startupImage: [`/tachi.png`],
+  },
+  applicationName: "Tachi - MicroBets Prediction Market"
 }
 
 export default function RootLayout({
