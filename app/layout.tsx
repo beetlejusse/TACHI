@@ -10,9 +10,9 @@ export const metadata: Metadata = {
   title: 'Tachi - MicroBets Prediction Market',
   description: 'Tachi is a microbets prediction market platform built on the Monad blockchain.',
   icons: {
-    icon: [`/tachi.png`],
-    shortcut: [`/tachi.png`],
-    apple: [`/tachi.png`]
+    icon: [`/monad.png`],
+    shortcut: [`/monad.png`],
+    apple: [`/monad.png`]
   },
   openGraph: {
     title: "Tachi - MicroBets Prediction Market",
@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     siteName: "Tachi - MicroBets Prediction Market",
     locale: "en_US",
     type: "website",
+    images: ["/tachi.png"]
   },
   twitter: {
     card: "summary_large_image",
